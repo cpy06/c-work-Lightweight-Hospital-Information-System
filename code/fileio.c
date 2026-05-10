@@ -43,6 +43,7 @@ static const char *DATA_FILES[] = {
 };
 
 static const int DATA_FILE_COUNT = (int)(sizeof(DATA_FILES) / sizeof(DATA_FILES[0]));
+static int extract_directory(const char *path, char *directory, int size);
 
 static void write_utf8_bom(FILE *fp) {
     if (fp != NULL) {
@@ -118,6 +119,48 @@ static int try_change_to_directory(const char *directory) {
     return CHDIR(directory) == 0;
 }
 
+static int try_change_to_known_data_directory(void) {
+    const char *candidates[] = {
+        "test_data",
+        "../test_data",
+        "data",
+        "../data"
+    };
+    int index = 0;
+    for (index = 0; index < (int)(sizeof(candidates) / sizeof(candidates[0])); index++) {
+        if (try_change_to_directory(candidates[index])) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int try_change_to_related_data_directory(const char *path) {
+    char directory[PATH_MAX];
+    char candidate[PATH_MAX];
+    int written = 0;
+    if (!extract_directory(path, directory, sizeof(directory))) {
+        return 0;
+    }
+    written = snprintf(candidate, sizeof(candidate), "%s/test_data", directory);
+    if (written > 0 && written < (int)sizeof(candidate) && try_change_to_directory(candidate)) {
+        return 1;
+    }
+    written = snprintf(candidate, sizeof(candidate), "%s/../test_data", directory);
+    if (written > 0 && written < (int)sizeof(candidate) && try_change_to_directory(candidate)) {
+        return 1;
+    }
+    written = snprintf(candidate, sizeof(candidate), "%s/data", directory);
+    if (written > 0 && written < (int)sizeof(candidate) && try_change_to_directory(candidate)) {
+        return 1;
+    }
+    written = snprintf(candidate, sizeof(candidate), "%s/../data", directory);
+    if (written > 0 && written < (int)sizeof(candidate) && try_change_to_directory(candidate)) {
+        return 1;
+    }
+    return 0;
+}
+
 static void trim_last_path_component(char *directory) {
     char *last_slash = NULL;
     if (directory == NULL || directory[0] == '\0') {
@@ -165,7 +208,16 @@ void prepare_data_directory(const char *argv0, const char *source_file) {
     if (directory_has_data_files(".")) {
         return;
     }
+    if (try_change_to_known_data_directory()) {
+        return;
+    }
+    if (argv0 != NULL && try_change_to_related_data_directory(argv0)) {
+        return;
+    }
     if (argv0 != NULL && try_change_to_directory_or_parent(argv0)) {
+        return;
+    }
+    if (source_file != NULL && try_change_to_related_data_directory(source_file)) {
         return;
     }
     if (source_file != NULL) {

@@ -17,59 +17,96 @@
 - 统计报表：支持整体分析报告导出，也支持科室分析、药品分析和利润统计分段导出。
 - 利润统计：可统计药品总利润，并计算包含挂号费等收入在内的医院总体利润。
 
-## 项目结构
+## 目录结构
 
 ```text
 .
-├── main.c                  # 程序入口，默认一键包含各业务模块
-├── common.h / common.c     # 公共结构、常量、工具函数、输入校验
-├── system.h                # 系统结构与业务函数声明
-├── fileio.h / fileio.c     # txt 数据文件读写
-├── auth.c                  # 登录认证、角色权限、密码修改
-├── menu.c                  # 菜单调度
-├── patient.c               # 患者资料管理
-├── doctor.c                # 医生资料管理
-├── nurse.c                 # 护士资料与护士端功能
-├── pharmacy_staff.c        # 药房工作人员资料管理
-├── department.c            # 科室管理
-├── ward.c                  # 病房、床位、住院资源管理
-├── drug.c                  # 药品、处方、发药管理
-├── record.c                # 挂号、接诊、医疗记录、住院出院
-├── analysis.c              # 查询统计与报表导出
-├── forecast.c              # 趋势预测
-├── optimize.c              # 优化建议
-├── testdata.c / testdata.h # 默认演示数据
+├── README.md               # 项目说明
 ├── TEST_DATA.md            # 测试数据汇总文档
-└── *.txt                   # 本地持久化数据文件
+├── code/                   # 源码与 Windows 可执行文件
+│   ├── main.c              # 程序入口，默认一键包含各业务模块
+│   ├── common.h / common.c # 公共结构、常量、工具函数、输入校验
+│   ├── system.h            # 系统结构与业务函数声明
+│   ├── fileio.h / fileio.c # txt 数据文件读写
+│   ├── auth.c              # 登录认证、角色权限、密码修改
+│   ├── menu.c              # 菜单调度
+│   ├── patient.c           # 患者资料管理
+│   ├── doctor.c            # 医生资料管理
+│   ├── nurse.c             # 护士资料与护士端功能
+│   ├── pharmacy_staff.c    # 药房工作人员资料管理
+│   ├── department.c        # 科室管理
+│   ├── ward.c              # 病房、床位、住院资源管理
+│   ├── drug.c              # 药品、处方、发药管理
+│   ├── record.c            # 挂号、接诊、医疗记录、住院出院
+│   ├── analysis.c          # 查询统计与报表导出
+│   ├── forecast.c          # 趋势预测
+│   ├── optimize.c          # 优化建议
+│   ├── testdata.c/.h       # 默认演示数据
+│   └── his.exe             # Windows 64 位控制台程序
+└── test_data/              # txt 测试数据与导出报表
+    ├── patients.txt
+    ├── doctors.txt
+    ├── nurses.txt
+    ├── pharmacy_staff.txt
+    ├── departments.txt
+    ├── wards.txt
+    ├── beds.txt
+    ├── drugs.txt
+    ├── records.txt
+    ├── registrations.txt
+    ├── admissions.txt
+    ├── prescriptions.txt
+    ├── prescription_items.txt
+    ├── drug_usage.txt
+    ├── log.txt
+    └── *_report.txt
 ```
 
 ## 编译运行
 
-本项目默认开启 `HIS_MAIN_ONE_CLICK_BUILD`，因此直接编译 `main.c` 即可构建完整系统。
+本项目默认开启 `HIS_MAIN_ONE_CLICK_BUILD`，因此直接编译 `code/main.c` 即可构建完整系统。程序启动时会自动寻找当前目录、`test_data/` 或 `../test_data/` 中的数据文件。
 
 ### macOS / Linux
 
 ```bash
+cd code
 cc -std=c99 -Wall -Wextra -pedantic main.c -o his
 ./his
 ```
 
-### Windows
-
-如果已经安装 MinGW-w64，可在 Windows 终端中执行：
+也可以在仓库根目录运行：
 
 ```bash
-gcc -std=c99 -Wall -Wextra -pedantic main.c -o his.exe
+./code/his
+```
+
+### Windows
+
+仓库已提供预编译的 Windows 64 位控制台程序：
+
+```text
+code/his.exe
+```
+
+在 Windows 终端中进入 `code` 目录后运行：
+
+```bat
 his.exe
+```
+
+如果需要自行编译，可使用 MinGW-w64：
+
+```bash
+cd code
+gcc -std=c99 -Wall -Wextra -pedantic main.c -o his.exe
 ```
 
 如果在 macOS 上交叉编译 Windows 版本，可使用：
 
 ```bash
+cd code
 x86_64-w64-mingw32-gcc -std=c99 -Wall -Wextra -pedantic -static main.c -o his.exe
 ```
-
-运行 Windows 版本时，请将 `his.exe` 与项目中的 `.txt` 数据文件放在同一目录下，避免程序启动后找不到数据。
 
 ## 登录说明
 
@@ -121,27 +158,27 @@ x86_64-w64-mingw32-gcc -std=c99 -Wall -Wextra -pedantic -static main.c -o his.ex
 
 ## 数据文件
 
-系统启动时会读取当前目录下的 txt 文件；如果没有检测到完整数据，会自动生成默认演示数据并保存。
+测试数据统一放在 `test_data/` 目录中。系统启动时会读取该目录下的 txt 文件；如果没有检测到完整数据，会自动生成默认演示数据并保存。
 
 主要数据文件包括：
 
 ```text
-patients.txt                  # 患者数据
-doctors.txt                   # 医生数据
-nurses.txt                    # 护士数据
-pharmacy_staff.txt            # 药房工作人员数据
-departments.txt               # 科室数据
-wards.txt                     # 病房数据
-beds.txt                      # 床位数据
-drugs.txt                     # 药品数据
-drug_department_rules.txt     # 药品科室规则
-records.txt                   # 医疗记录
-registrations.txt             # 挂号记录
-admissions.txt                # 住院记录
-prescriptions.txt             # 处方主表
-prescription_items.txt        # 处方明细
-drug_usage.txt                # 发药与用药记录
-log.txt                       # 操作日志
+test_data/patients.txt                  # 患者数据
+test_data/doctors.txt                   # 医生数据
+test_data/nurses.txt                    # 护士数据
+test_data/pharmacy_staff.txt            # 药房工作人员数据
+test_data/departments.txt               # 科室数据
+test_data/wards.txt                     # 病房数据
+test_data/beds.txt                      # 床位数据
+test_data/drugs.txt                     # 药品数据
+test_data/drug_department_rules.txt     # 药品科室规则
+test_data/records.txt                   # 医疗记录
+test_data/registrations.txt             # 挂号记录
+test_data/admissions.txt                # 住院记录
+test_data/prescriptions.txt             # 处方主表
+test_data/prescription_items.txt        # 处方明细
+test_data/drug_usage.txt                # 发药与用药记录
+test_data/log.txt                       # 操作日志
 ```
 
 程序运行过程中修改的数据会先保存在内存中，请在菜单中选择“保存数据”，或退出系统时选择保存，确保修改写回 `.txt` 文件。
@@ -162,22 +199,11 @@ drug_analysis_report.txt       # 药品分析报告
 profit_report.txt              # 利润统计报告
 ```
 
-## GitHub 提交建议
+程序会把报表导出到当前识别到的数据目录中，本仓库中的示例报表位于 `test_data/`。
 
-建议提交源码、README、必要的初始 txt 数据文件和课程要求的 Windows 可执行文件。如果只是作为开源代码仓库，通常不建议提交本机编译产物和运行日志，例如：
+## 测试数据说明
 
-```text
-main
-*.exe
-analysis_report.txt
-department_analysis_report.txt
-drug_analysis_report.txt
-profit_report.txt
-log.txt
-.DS_Store
-```
-
-如果课程或验收要求直接运行 Windows 程序，可以保留 `his.exe`，并在发布说明中注明它由当前源码编译生成。
+完整测试数据字段、记录数和内容见 [TEST_DATA.md](TEST_DATA.md)。
 
 ## 适用环境
 
@@ -186,7 +212,3 @@ log.txt
 - 推荐运行环境：Windows Terminal、PowerShell、macOS Terminal 或 Linux Terminal
 
 Windows 控制台下程序会尝试设置中文编码；如果仍出现乱码，建议使用 Windows Terminal，并将终端编码设置为 UTF-8。
-
-## 整理说明
-
-本仓库的 README、测试数据汇总和提交文件整理由 OpenAI Codex 辅助完成。
